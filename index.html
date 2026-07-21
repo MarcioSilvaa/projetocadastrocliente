@@ -1,0 +1,175 @@
+<!DOCTYPE html> <!-- Define o tipo de documento como HTML5 -->
+<html lang="pt-BR"> <!-- Inicia o documento HTML definindo o idioma como Português do Brasil -->
+<head> <!-- Inicia a seção de cabeçalho do documento -->
+    <meta charset="UTF-8"> <!-- Define a codificação de caracteres como UTF-8 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Garante a responsividade em dispositivos móveis -->
+    <title>Sistema de Cadastro de Clientes</title> <!-- Define o título da página exibido na aba do navegador -->
+    <link rel="stylesheet" href="./style.css"> <!-- Vincula a folha de estilos externa style.css -->
+</head> <!-- Fecha a seção de cabeçalho -->
+<body> <!-- Inicia o corpo visível da página -->
+
+    <!-- TELA DE AUTENTICAÇÃO (LOGIN) -->
+    <div id="auth-screen" class="screen active"> <!-- Container principal da tela de login, visível por padrão -->
+        <div class="auth-card"> <!-- Cartão centralizado para o formulário de login -->
+            <h2>Login - Sistema de Clientes</h2> <!-- Título principal da tela de login -->
+            <form id="login-form"> <!-- Formulário de autenticação de usuários -->
+                <div class="form-group"> <!-- Grupo de campo para o e-mail -->
+                    <label for="login-email">E-mail</label> <!-- Rótulo para o campo de e-mail -->
+                    <input type="email" id="login-email" required placeholder="seu@email.com"> <!-- Campo de entrada para o e-mail -->
+                </div> <!-- Fecha o grupo de e-mail -->
+                <div class="form-group"> <!-- Grupo de campo para a senha -->
+                    <label for="login-password">Senha</label> <!-- Rótulo para o campo de senha -->
+                    <input type="password" id="login-password" required placeholder="Sua senha"> <!-- Campo de entrada para a senha -->
+                </div> <!-- Fecha o grupo de senha -->
+                <button type="submit" class="btn btn-primary">Entrar</button> <!-- Botão para submeter o formulário de login -->
+            </form> <!-- Fecha o formulário de login -->
+            <p id="auth-error" class="error-message"></p> <!-- Parágrafo reservado para exibir mensagens de erro de autenticação -->
+        </div> <!-- Fecha o cartão de login -->
+    </div> <!-- Fecha a tela de autenticação -->
+
+    <!-- TELA PRINCIPAL DO SISTEMA (PROTEGIDA) -->
+    <div id="app-screen" class="screen"> <!-- Container principal do sistema, oculto inicialmente -->
+        <header class="app-header"> <!-- Cabeçalho interno do aplicativo -->
+            <h1>Gestão de Clientes</h1> <!-- Título principal do aplicativo -->
+            <button id="logout-btn" class="btn btn-danger">Sair</button> <!-- Botão para realizar o logout do usuário -->
+        </header> <!-- Fecha o cabeçalho do aplicativo -->
+
+        <main class="app-main"> <!-- Seção principal com o conteúdo do sistema -->
+            <!-- FORMULÁRIO DE CADASTRO / EDIÇÃO -->
+            <section class="card form-section"> <!-- Seção em cartão contendo o formulário de clientes -->
+                <h2>Cadastro de Cliente</h2> <!-- Título da seção de cadastro -->
+                <form id="client-form"> <!-- Formulário para gerenciar os dados do cliente -->
+                    <input type="hidden" id="client-id"> <!-- Campo oculto para armazenar o ID gerado ou Firestore ID -->
+
+                    <!-- Seção de Foto -->
+                    <div class="photo-container"> <!-- Container para a foto e controles de captura/upload -->
+                        <div class="photo-preview"> <!-- Área de visualização da foto -->
+                            <img id="preview-img" src="https://via.placeholder.com/120" alt="Foto do Cliente"> <!-- Imagem de pré-visualização -->
+                        </div> <!-- Fecha a área de visualização -->
+                        <div class="photo-controls"> <!-- Controles para selecionar origem da foto -->
+                            <input type="file" id="upload-file" accept="image/*"> <!-- Campo de input tipo file para envio local -->
+                            <button type="button" id="btn-webcam" class="btn btn-secondary">Usar Webcam</button> <!-- Botão para abrir a webcam -->
+                        </div> <!-- Fecha os controles de foto -->
+                    </div> <!-- Fecha o container de foto -->
+
+                    <!-- Modal/Área da Webcam (Oculta por padrão) -->
+                    <div id="webcam-container" class="hidden"> <!-- Container modal da webcam -->
+                        <video id="webcam-video" autoplay playsinline></video> <!-- Elemento de vídeo para stream da webcam -->
+                        <button type="button" id="btn-capture" class="btn btn-primary">Tirar Foto</button> <!-- Botão para capturar a imagem do vídeo -->
+                        <canvas id="webcam-canvas" class="hidden"></canvas> <!-- Canvas oculto para processar os pixels da imagem capturada -->
+                    </div> <!-- Fecha o container da webcam -->
+
+                    <!-- Dados Pessoais -->
+                    <div class="form-row"> <!-- Linha de formulário para agrupar campos -->
+                        <div class="form-group flex-2"> <!-- Grupo de campo para o nome completo -->
+                            <label for="client-name">Nome Completo</label> <!-- Rótulo para o nome -->
+                            <input type="text" id="client-name" required placeholder="Nome completo do cliente"> <!-- Campo de texto para o nome -->
+                        </div> <!-- Fecha o grupo de nome -->
+                        <div class="form-group flex-1"> <!-- Grupo de campo para o e-mail do cliente -->
+                            <label for="client-email">E-mail</label> <!-- Rótulo para o e-mail -->
+                            <input type="email" id="client-email" required placeholder="email@exemplo.com"> <!-- Campo para o e-mail -->
+                        </div> <!-- Fecha o grupo de e-mail -->
+                    </div> <!-- Fecha a linha do formulário -->
+
+                    <!-- Seleção de Documento -->
+                    <div class="form-group"> <!-- Grupo para seleção do tipo de documento -->
+                        <label>Tipo de Documento</label> <!-- Rótulo para os botões de documento -->
+                        <div class="doc-type-buttons"> <!-- Container dos botões de seleção -->
+                            <button type="button" class="btn-doc active" data-type="CPF">CPF</button> <!-- Botão para selecionar CPF -->
+                            <button type="button" class="btn-doc" data-type="RG">RG</button> <!-- Botão para selecionar RG -->
+                            <button type="button" class="btn-doc" data-type="CNH">CNH</button> <!-- Botão para selecionar CNH -->
+                        </div> <!-- Fecha o container dos botões -->
+                        <input type="text" id="client-document" required placeholder="Digite o documento conforme o tipo selecionado"> <!-- Campo dinâmico para o documento -->
+                    </div> <!-- Fecha o grupo de documento -->
+
+                    <!-- Endereço via ViaCEP -->
+                    <div class="form-row"> <!-- Linha de formulário para o CEP e Rua -->
+                        <div class="form-group flex-1"> <!-- Grupo para o CEP -->
+                            <label for="client-cep">CEP</label> <!-- Rótulo para o CEP -->
+                            <input type="text" id="client-cep" maxlength="9" required placeholder="00000-000"> <!-- Campo para o CEP com limite -->
+                        </div> <!-- Fecha o grupo de CEP -->
+                        <div class="form-group flex-3"> <!-- Grupo para a Rua/Avenida -->
+                            <label for="client-street">Rua / Avenida</label> <!-- Rótulo para rua -->
+                            <input type="text" id="client-street" required placeholder="Logradouro"> <!-- Campo para rua preenchido via API -->
+                        </div> <!-- Fecha o grupo de rua -->
+                    </div> <!-- Fecha a linha do formulário -->
+
+                    <div class="form-row"> <!-- Linha de formulário para número, complemento e bairro -->
+                        <div class="form-group flex-1"> <!-- Grupo para o número -->
+                            <label for="client-number">Número</label> <!-- Rótulo para número -->
+                            <input type="text" id="client-number" required placeholder="Nº"> <!-- Campo manual para número -->
+                        </div> <!-- Fecha o grupo de número -->
+                        <div class="form-group flex-2"> <!-- Grupo para o complemento -->
+                            <label for="client-complement">Complemento</label> <!-- Rótulo para complemento -->
+                            <input type="text" id="client-complement" placeholder="Apto, Bloco, etc."> <!-- Campo manual para complemento -->
+                        </div> <!-- Fecha o grupo de complemento -->
+                        <div class="form-group flex-2"> <!-- Grupo para o bairro -->
+                            <label for="client-neighborhood">Bairro</label> <!-- Rótulo para bairro -->
+                            <input type="text" id="client-neighborhood" required placeholder="Bairro"> <!-- Campo preenchido via API -->
+                        </div> <!-- Fecha o grupo de bairro -->
+                    </div> <!-- Fecha a linha do formulário -->
+
+                    <div class="form-row"> <!-- Linha de formulário para Cidade e UF -->
+                        <div class="form-group flex-2"> <!-- Grupo para a cidade -->
+                            <label for="client-city">Cidade</label> <!-- Rótulo para cidade -->
+                            <input type="text" id="client-city" required placeholder="Cidade"> <!-- Campo preenchido via API -->
+                        </div> <!-- Fecha o grupo de cidade -->
+                        <div class="form-group flex-1"> <!-- Grupo para a UF (Estado) -->
+                            <label for="client-uf">UF</label> <!-- Rótulo para UF -->
+                            <input type="text" id="client-uf" maxlength="2" required placeholder="UF"> <!-- Campo preenchido via API -->
+                        </div> <!-- Fecha o grupo de UF -->
+                    </div> <!-- Fecha a linha do formulário -->
+
+                    <!-- Botões de Ação do CRUD -->
+                    <div class="form-actions"> <!-- Container para os botões de operação CRUD -->
+                        <button type="submit" id="btn-save" class="btn btn-success">Cadastrar</button> <!-- Botão para salvar/cadastrar -->
+                        <button type="button" id="btn-update" class="btn btn-warning" disabled>Alterar</button> <!-- Botão para atualizar registro existente -->
+                        <button type="button" id="btn-delete" class="btn btn-danger" disabled>Deletar</button> <!-- Botão para excluir registro -->
+                        <button type="button" id="btn-clear" class="btn btn-secondary">Limpar</button> <!-- Botão para limpar o formulário -->
+                    </div> <!-- Fecha o container de ações -->
+                </form> <!-- Fecha o formulário de clientes -->
+            </section> <!-- Fecha a seção do formulário -->
+
+            <!-- SEÇÃO DE RELATÓRIOS E CONSULTA -->
+            <section class="card reports-section"> <!-- Seção em cartão para relatórios e listagem -->
+                <h2>Consulta e Relatórios</h2> <!-- Título da seção de relatórios -->
+                
+                <div class="report-filters"> <!-- Container para os filtros de relatórios -->
+                    <div class="form-group"> <!-- Grupo para filtro por cidade -->
+                        <input type="text" id="filter-city" placeholder="Filtrar por Cidade"> <!-- Input para digitar a cidade alvo -->
+                        <button type="button" id="btn-print-city" class="btn btn-info">Imprimir por Cidade</button> <!-- Botão de impressão por cidade -->
+                    </div> <!-- Fecha o grupo de filtro por cidade -->
+                    <div class="form-group"> <!-- Grupo para filtro por UF -->
+                        <input type="text" id="filter-uf" maxlength="2" placeholder="Filtrar por UF"> <!-- Input para digitar a UF alvo -->
+                        <button type="button" id="btn-print-uf" class="btn btn-info">Imprimir por UF</button> <!-- Botão de impressão por UF -->
+                    </div> <!-- Fecha o grupo de filtro por UF -->
+                    <div class="global-print-controls"> <!-- Container para relatórios gerais -->
+                        <button type="button" id="btn-print-all" class="btn btn-primary">Imprimir Todos</button> <!-- Botão para imprimir relatório geral -->
+                    </div> <!-- Fecha os controles globais -->
+                </div> <!-- Fecha os filtros de relatórios -->
+
+                <div class="table-responsive"> <!-- Container responsivo para a tabela de dados -->
+                    <table id="clients-table"> <!-- Tabela para listagem dos clientes cadastrados -->
+                        <thead> <!-- Cabeçalho da tabela -->
+                            <tr> <!-- Linha do cabeçalho -->
+                                <th>Foto</th> <!-- Coluna da foto -->
+                                <th>Nome</th> <!-- Coluna do nome -->
+                                <th>Documento</th> <!-- Coluna do documento -->
+                                <th>E-mail</th> <!-- Coluna do e-mail -->
+                                <th>Cidade/UF</th> <!-- Coluna da localização -->
+                                <th>Ações</th> <!-- Coluna para ações rápidas na linha -->
+                            </tr> <!-- Fecha a linha do cabeçalho -->
+                        </thead> <!-- Fecha o cabeçalho -->
+                        <tbody id="clients-table-body"> <!-- Corpo da tabela onde os dados serão injetados dinamicamente -->
+                            <!-- Dados inseridos via JavaScript -->
+                        </tbody> <!-- Fecha o corpo da tabela -->
+                    </table> <!-- Fecha a tabela -->
+                </div> <!-- Fecha o container responsivo -->
+            </section> <!-- Fecha a seção de relatórios -->
+        </main> <!-- Fecha o conteúdo principal -->
+    </div> <!-- Fecha a tela principal do aplicativo -->
+
+    <!-- Script principal da aplicação vinculando os módulos e lógica -->
+    <script type="module" src="script.js"></script> <!-- Importa o arquivo de lógica app.js como módulo JavaScript -->
+</body> <!-- Fecha o corpo da página -->
+</html> <!-- Fecha a estrutura do documento HTML -->
